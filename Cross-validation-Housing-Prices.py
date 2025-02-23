@@ -5,7 +5,7 @@ if not os.path.exists("../input/train.csv"):
 from learntools.core import binder
 binder.bind(globals())
 from learntools.ml_intermediate.ex5 import *
-print("Setup Complete")
+
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
