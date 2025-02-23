@@ -72,7 +72,7 @@ input_shape = [X_train.shape[1]]
 from tensorflow import keras
 from tensorflow.keras import layers
 
-# YOUR CODE HERE: define the model given in the diagram
+
 model = keras.Sequential([
     layers.BatchNormalization(),
     layers.Dense(256, activation='relu', input_shape=input_shape),
