@@ -1,0 +1,101 @@
+
+
+import numpy as np 
+import pandas as pd 
+
+
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+import matplotlib.pyplot as plt
+
+data = pd.read_csv("/kaggle/input/employee-performance-and-productivity-data/Extended_Employee_Performance_and_Productivity_Data.csv")
+data.head()
+
+data.info()
+data.columns
+
+data = data.drop(columns = ['Employee_ID', 'Hire_Date', 'Work_Hours_Per_Week', 'Work_Hours_Per_Week', 'Sick_Days', 'Remote_Work_Frequency', 'Training_Hours', 'Resigned'])
+
+data.head()
+
+data.isna().sum() #No null_entries
+
+data.duplicated().sum() #No duplictes found
+
+data.groupby("Department")["Monthly_Salary"].mean().sort_values(ascending = False).plot(kind = "bar")
+plt.title("Average Salaries by Department")
+plt.ylabel(" Average Salary")
+plt.xlabel(" Department")
+plt.show()
+
+data.head()
+
+data["Performance_Score"].value_counts().plot(kind = "pie")
+
+data["Gender"].value_counts()
+
+data.groupby("Department")["Years_At_Company"].mean().sort_values(ascending = False)
+data["Department"].value_counts()
+data.describe()
+data.groupby(["Department", "Performance_Score"])["Overtime_Hours"].mean()
+
+df_numeric = data.select_dtypes(include = ["number"])
+df_numeric
+
+df_numeric.corr()["Performance_Score"].sort_values(ascending = False)
+
+y = data["Performance_Score"]
+x = data[["Years_At_Company", "Monthly_Salary", "Overtime_Hours", "Promotions", "Employee_Satisfaction_Score"]]
+print(x)
+
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2)
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+x_train = scaler.fit_transform(x_train)
+
+x_test = scaler.fit_transform(x_test)
+from sklearn.metrics import accuracy_score
+def performance(predictions):
+    score = accuracy_score(y_test,predictions)
+    print(f"The accuracy score is {score}")
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LogisticRegression
+log_model = LogisticRegression()
+
+log_model.fit(x_train,y_train)
+log_model.predict(x_test)
+
+log_predictions = log_model.predict(x_test)
+
+performance(log_predictions)
+
+from sklearn.neighbors import KNeighborsClassifier
+parameters = {"n_neighbors": [3,5,7], "weights": ["uniform", "distance"]}
+
+grid_Kneighbors = GridSearchCV(KNeighborsClassifier(),parameters,cv = None)
+grid_Kneighbors.fit(x_train,y_train)
+
+grid_kn_predictions = grid_Kneighbors.predict(x_test)
+print(grid_kn_predictions)
+
+performance(grid_kn_predictions)
+
+parameters_1 = {"n_estimators": [400,600,800,1000], "learning_rate": [0.05,0.04,0.06]}
+
+from xgboost import XGBRegressor
+grid_gradient_boost = GridSearchCV(XGBRegressor(),parameters_1, cv = None)
+grid_gradient_boost.fit(x_train,y_train)
+
+grid_grb_predictions = grid_gradient_boost.predict(x_test)
+
+grid_grb_predictions = [round(x) for x in grid_grb_predictions]
+performance(grid_grb_predictions)
+
+print("In our case the best accuracy is obtained by the last model grid_grb_predictions")
